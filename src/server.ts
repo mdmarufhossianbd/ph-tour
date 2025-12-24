@@ -3,6 +3,7 @@ import { Server } from 'http';
 import mongoose from 'mongoose';
 import app from './app';
 import { envVars } from './app/config/env';
+import { speedSuperAdmin } from './app/utils/speedSuperAdmin';
 
 let server: Server;
 
@@ -20,8 +21,12 @@ const startServer = async () => {
     }
 }
 
-startServer()
-
+(
+    async () => {
+        await startServer()
+        await speedSuperAdmin()
+    }
+)()
 
 process.on("unhandledRejection", (error) => {
     console.log("Unhandled rejecttion detected... server is shutting down...", error);
