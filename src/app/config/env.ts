@@ -8,13 +8,15 @@ interface EnvConfig {
     NODE_ENV: "development" | "production",
     JWT_SECRET: string,
     JWT_EXPIRES_IN: string,
+    JWT_REFRESH_SECRET: string,
+    JWT_REFRESH_EXPIRES_IN: string,
     BCRYPT_SALT_ROUND: string,
     SUPER_ADMIN_EMAIL: string,
     SUPER_ADMIN_PASSWORD: string,
 }
 
 const loadEnvVar = (): EnvConfig => {
-    const requiredVars = ["PORT", "DB_URL", "NODE_ENV", "JWT_SECRET", "JWT_EXPIRES_IN", "BCRYPT_SALT_ROUND", "SUPER_ADMIN_EMAIL", "SUPER_ADMIN_PASSWORD"];
+    const requiredVars = ["PORT", "DB_URL", "NODE_ENV", "JWT_SECRET", "JWT_EXPIRES_IN", "JWT_REFRESH_SECRET", "JWT_REFRESH_EXPIRES_IN", "BCRYPT_SALT_ROUND", "SUPER_ADMIN_EMAIL", "SUPER_ADMIN_PASSWORD"];
     requiredVars.forEach(key => {
         if (!process.env[key]) {
             throw new Error(`Environment variable ${key} is missing in .env file`);
@@ -29,6 +31,8 @@ const loadEnvVar = (): EnvConfig => {
         BCRYPT_SALT_ROUND: process.env.BCRYPT_SALT_ROUND as string,
         SUPER_ADMIN_EMAIL: process.env.SUPER_ADMIN_EMAIL as string,
         SUPER_ADMIN_PASSWORD: process.env.SUPER_ADMIN_PASSWORD as string,
+        JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET as string,
+        JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN as string,
     }
 }
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import bcrypt from 'bcryptjs';
 import httpStatus from "http-status-codes";
 import { envVars } from '../../config/env';
@@ -23,19 +24,10 @@ const creadentialsLogin = async (payload: Partial<IUser>) => {
         role: userExits.role,
     }
     const accessToken = generateToken(jwtPayload, envVars.JWT_SECRET, envVars.JWT_EXPIRES_IN);
-    const userData = {
-        _id: userExits._id,
-        name: userExits.name,
-        email: userExits.email,
-        role: userExits.role,
-        isDeleted: userExits.isDeleted,
-        isActive: userExits.isActive,
-        isVerified: userExits.isVerified,
-        auths: userExits.auths,
-        accessToken
-    };
+    const refreshToken = generateToken(jwtPayload, envVars.JWT_REFRESH_SECRET, envVars.JWT_REFRESH_EXPIRES_IN);
+    const { password: pass, ...user } = userExits.toObject();
 
-    return userData;
+    return { accessToken, user };
 }
 
 
