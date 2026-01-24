@@ -16,8 +16,21 @@ const creadentialsLogin = catchAsync(async (req: Request, res: Response, next: N
         statusCode: httpStatus.OK
     })
 })
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const getNewAccessToken = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const refreshToken = req.cookies.refreshToken as string
+    const tokenInfo = await AuthServices.getNewAccessToken(refreshToken)
+
+    sendResponse(res, {
+        success: true,
+        message: "User logged in successfully",
+        data: tokenInfo,
+        statusCode: httpStatus.OK
+    })
+})
 
 
 export const AuthControllers = {
-    creadentialsLogin
+    creadentialsLogin,
+    getNewAccessToken
 }
