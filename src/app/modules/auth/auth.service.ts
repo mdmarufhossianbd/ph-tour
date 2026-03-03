@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import bcrypt from "bcryptjs";
 import httpStatus from "http-status-codes";
-import { JwtPayload } from "jsonwebtoken";
-import { envVars } from "../../config/env";
 import AppError from "../../errorHandler/AppError";
-import { verifyToken } from "../../utils/jwt";
-import { createUserTokens } from "../../utils/userTokens";
-import { IsActive, IUser } from "../user/user.interface";
+import {
+  createNewAccessTokenWithRefreshToken,
+  createUserTokens,
+} from "../../utils/userTokens";
+import { IUser } from "../user/user.interface";
 import { User } from "../user/user.model";
 
 const creadentialsLogin = async (payload: Partial<IUser>) => {
@@ -36,30 +36,8 @@ const creadentialsLogin = async (payload: Partial<IUser>) => {
 };
 
 const getNewAccessToken = async (refreshToken: string) => {
-  const verifiedRefreshToken = verifyToken(
-    refreshToken,
-    envVars.JWT_SECRET_REFRESH as string,
-  ) as JwtPayload;
-
-  const userExits = await User.findOne({ email: verifiedRefreshToken.email });
-
-  if (!userExits) {
-    throw new AppError(httpStatus.NOT_FOUND, "User does not exist");
-  }
-  if (
-    userExits.isActive === IsActive.BLOCKED ||
-    userExits.isActive === IsActive.INACTIVE
-  ) {
-    throw new AppError(httpStatus.UNAUTHORIZED, "User is blocked or inactive");
-  }
-  if (userExits.isDeleted) {
-    throw new AppError(httpStatus.UNAUTHORIZED, "User is deleted");
-  }
-  const userToken = createUserTokens(userExits);
-
-  return {
-    accessToken: userToken.accessToken,
-  };
+  const accessToken = await createNewAccessTokenWithRefreshToken(refreshToken);
+  return accessToken;
 };
 
 export const AuthServices = {

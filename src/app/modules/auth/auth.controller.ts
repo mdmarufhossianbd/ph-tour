@@ -1,21 +1,17 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status-codes";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
+import { setAuthCookie } from "../../utils/setCookie";
 import { AuthServices } from "./auth.service";
 
 const creadentialsLogin = catchAsync(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (req: Request, res: Response, next: NextFunction) => {
     const loginInfo = await AuthServices.creadentialsLogin(req.body);
-    res.cookie("refreshToken", loginInfo.refreshToken, {
-      httpOnly: true,
-      secure: false,
-    });
-    res.cookie("accessToken", loginInfo.accessToken, {
-      httpOnly: true,
-      secure: false,
-    });
+
+    setAuthCookie(res, loginInfo);
+
     sendResponse(res, {
       success: true,
       message: "User logged in successfully",
@@ -25,7 +21,6 @@ const creadentialsLogin = catchAsync(
   },
 );
 const getNewAccessToken = catchAsync(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (req: Request, res: Response, next: NextFunction) => {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
@@ -38,6 +33,7 @@ const getNewAccessToken = catchAsync(
     }
 
     const tokenInfo = await AuthServices.getNewAccessToken(refreshToken);
+    setAuthCookie(res, tokenInfo);
 
     sendResponse(res, {
       success: true,
@@ -47,8 +43,29 @@ const getNewAccessToken = catchAsync(
     });
   },
 );
+const logout = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+    });
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+    });
+    sendResponse(res, {
+      success: true,
+      message: "User logged out successfully",
+      data: null,
+      statusCode: httpStatus.OK,
+    });
+  },
+);
 
 export const AuthControllers = {
   creadentialsLogin,
   getNewAccessToken,
+  logout,
 };
