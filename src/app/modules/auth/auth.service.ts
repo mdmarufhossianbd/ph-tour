@@ -1,6 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import bcrypt from "bcryptjs";
 import httpStatus from "http-status-codes";
+import { JwtPayload } from "jsonwebtoken";
+import { envVars } from "../../config/env";
 import AppError from "../../errorHandler/AppError";
 import {
   createNewAccessTokenWithRefreshToken,
@@ -40,7 +43,37 @@ const getNewAccessToken = async (refreshToken: string) => {
   return accessToken;
 };
 
+const resetPassword = async (
+  payload: Record<string, any>,
+  decodedToken: JwtPayload,
+) => {
+  if (payload.id !== decodedToken.userId) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "You are not authorized to reset password",
+    );
+  }
+  const isUser = await User.findById(decodedToken.userId);
+  if (!isUser) {
+    throw new AppError(httpStatus.NOT_FOUND, "User not found");
+  }
+  const isOldPasswordMatched = await bcrypt.compare(
+    payload.oldPassword,
+    isUser.password as string,
+  );
+  if (!isOldPasswordMatched) {
+    throw new AppError(httpStatus.UNAUTHORIZED, "Old password is incorrect");
+  }
+  const hashedPassword = await bcrypt.hash(
+    payload.newPassword,
+    Number(envVars.BCRYPT_SALT_ROUND),
+  );
+  isUser.password = hashedPassword;
+  await isUser.save();
+};
+
 export const AuthServices = {
   creadentialsLogin,
   getNewAccessToken,
+  resetPassword,
 };

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status-codes";
+import { JwtPayload } from "jsonwebtoken";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { setAuthCookie } from "../../utils/setCookie";
@@ -64,8 +65,23 @@ const logout = catchAsync(
   },
 );
 
+const resetPassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const decodedToken = req.user;
+    // console.log("decodedToken =>", decodedToken);
+    await AuthServices.resetPassword(req.body, decodedToken as JwtPayload);
+    sendResponse(res, {
+      success: true,
+      message: "Password reset successfully",
+      data: null,
+      statusCode: httpStatus.OK,
+    });
+  },
+);
+
 export const AuthControllers = {
   creadentialsLogin,
   getNewAccessToken,
   logout,
+  resetPassword,
 };

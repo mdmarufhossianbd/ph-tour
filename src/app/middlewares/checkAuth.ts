@@ -23,6 +23,7 @@ export const checkAuth =
           "You are not authorized to access this resource",
         );
       }
+      req.user = verifiedToken;
       next();
     } catch (error) {
       next(error);
